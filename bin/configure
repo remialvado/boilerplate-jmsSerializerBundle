@@ -1,0 +1,85 @@
+#!/bin/bash
+
+function fetch_vendors {
+  echo 'Installing dependencies... This may takes a few minutes the first time'
+  ${SCRIPT_DIR}/../bin/vendors install
+}
+
+function check_requirements {
+  echo -ne 'Checking Symfony 2 requirements... '
+  $(php  ${SCRIPT_DIR}/../app/check.php | grep '[[WARNING]]\|[[ ERROR ]]' &> /dev/null) && echo -e '\033[31m\033[1m KO ' && tput sgr0 && echo "Please fix Symfony2 dependency" && php ${SCRIPT_DIR}/../app/check.php && exit 1
+  echo -e '\033[32m\033[1m OK ' && tput sgr0
+}
+
+function install_pear_deps {
+  echo -ne 'Checking pear is installed... '
+  $(which pear &> /dev/null) || $(echo -e '\033[31m\033[1m KO ' && tput sgr0 && echo "Please install pear to continue..." && exit 1)
+  echo -e '\033[32m\033[1m OK ' && tput sgr0
+
+  echo -e 'Install dependencies if needed. You may have to enter your sudoer password.'
+  $(sudo pear list-channels | grep 'pear\.symfony\-project\.com' &> /dev/null) || $(echo -ne 'Adding symfony pear channel : ' && sudo pear channel-discover pear.symfony-project.com && echo -e '\033[32m\033[1m OK ' && tput sgr0)
+  echo -ne "   -> pear.symfony-project.com : " && echo -e '\033[32m\033[1m OK ' && tput sgr0
+  $(sudo pear list-channels | grep 'pear\.phpunit\.de' &> /dev/null) || $(echo -ne 'Adding PHPUnit pear channel : ' && sudo pear channel-discover pear.phpunit.de && echo -e '\033[32m\033[1m OK ' && tput sgr0)
+  echo -ne "   -> pear.phpunit.de : " && echo -e '\033[32m\033[1m OK ' && tput sgr0
+  $(sudo pear list-channels | grep 'hamcrest\.googlecode\.com\/svn\/pear' &> /dev/null) || $(echo -ne 'Adding hamcrest pear channel : ' && sudo pear channel-discover hamcrest.googlecode.com/svn/pear && echo -e '\033[32m\033[1m OK ' && tput sgr0)
+  echo -ne "   -> hamcrest.googlecode.com/svn/pear : " && echo -e '\033[32m\033[1m OK ' && tput sgr0
+
+  $(sudo pear list -c phpunit | grep 'PHPUnit' &> /dev/null) || $(echo -ne 'Install PHPUnit : ' && sudo pear install phpunit/PHPUnit && echo -e '\033[32m\033[1m OK ' && tput sgr0)
+  echo -ne "   -> PHPUnit : " && echo -e '\033[32m\033[1m OK ' && tput sgr0
+  $(sudo pear list -c hamcrest | grep  'Hamcrest' &> /dev/null) || $(echo -ne 'Install Hamcrest : ' && sudo pear install hamcrest/Hamcrest && echo -e '\033[32m\033[1m OK ' && tput sgr0)
+  echo -ne "   -> Hamcrest : " && echo -e '\033[32m\033[1m OK ' && tput sgr0
+}
+
+function configure_apache {
+  echo -ne 'Prepare Apache configuration : '
+  sed "s#@@DEPLOYMENT_DIR@@#${COMPONENT_DIR}#" < ${SCRIPT_DIR}/../app/Resources/apache/boilerplate-jms-serializer-bundle.conf-template > ${SCRIPT_DIR}/../app/Resources/apache/boilerplate-jms-serializer-bundle.conf
+  echo -e '\033[32m\033[1m OK ' && tput sgr0
+  echo "Apache configuration is available in ${COMPONENT_DIR}/app/Resources/apache/boilerplate-jms-serializer-bundle.conf. You have to activate it manually in your own Apache instance"
+}
+
+################
+# START SCRIPT #
+################
+
+PROGNAME=${0##*/}
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+COMPONENT_DIR="$(cd -P ${SCRIPT_DIR}/.. && pwd)"
+
+options=$(getopt -o vrpa -l no-fetch-vendors,no-check-requirements,no-install-pear-packages,no-configure-apache -- "$@")
+
+set -- $options
+
+NO_FETCH_VENDORS=
+NO_CHECK_REQUIREMENTS=
+NO_INSTALL_PEAR_PACKAGES=
+NO_CONFIGURE_APACHE=
+
+while true; do 
+   case $1 in 
+      -h|--help)  
+         exit 0 
+         ;; 
+      -v|--no-fetch-vendors)
+         NO_FETCH_VENDORS=yes
+         ;;
+      -r|--no-check-requirements)
+         NO_CHECK_REQUIREMENTS=yes
+         ;;
+      -p|--no-install-pear-packages)
+         NO_INSTALL_PEAR_PACKAGES=yes
+         ;;
+      -a|--no-configure-apache)
+         NO_CONFIGURE_APACHE=yes
+         ;;
+      *) 
+         shift 
+         break 
+         ;;
+   esac 
+   shift 
+done
+
+test -z "${NO_FETCH_VENDORS}" && fetch_vendors
+test -z "${NO_CHECK_REQUIREMENTS}" && check_requirements
+test -z "${NO_INSTALL_PEAR_PACKAGES}" && install_pear_deps
+test -z "${NO_CONFIGURE_APACHE}" && configure_apache

@@ -1,0 +1,19 @@
+Listen 9980
+<VirtualHost *:9980>
+   DocumentRoot "@@DEPLOYMENT_DIR@@/web"
+   <Directory  "@@DEPLOYMENT_DIR@@/web">
+     Options Indexes FollowSymLinks
+     AllowOverride None
+     Order allow,deny
+     allow from all
+
+    RewriteEngine On
+
+    RewriteRule ^$ /app.php [QSA,L]
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /app.php [QSA,L]
+
+   </Directory>
+</VirtualHost>

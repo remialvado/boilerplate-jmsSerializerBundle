@@ -1,0 +1,7 @@
+#!/bin/bash
+
+test "$1" = "-f" && $(which sudo &> /dev/null) && sudo rm -rf app/cache/* && exit 0
+
+php app/console cache:clear --env=dev
+php app/console cache:clear --env=prod
+

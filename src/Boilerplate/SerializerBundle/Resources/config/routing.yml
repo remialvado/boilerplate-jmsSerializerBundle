@@ -1,0 +1,7 @@
+BoilerplateSerializerBundle_book:
+    pattern:  /book/{id}.{_format}
+    defaults:
+      _controller: BoilerplateSerializerBundle:Book:index
+      _format : xml
+    requirements:
+      _format: xml|json

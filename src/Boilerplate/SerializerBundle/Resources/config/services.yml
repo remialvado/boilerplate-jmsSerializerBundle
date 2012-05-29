@@ -1,0 +1,7 @@
+parameters:
+#    boilerplate_serializer.example.class: Boilerplate\SerializerBundle\Example
+
+services:
+#    boilerplate_serializer.example:
+#        class: %boilerplate_serializer.example.class%
+#        arguments: [@service_id, "plain_value", %parameter%]

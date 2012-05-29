@@ -1,10 +1,10 @@
 [symfony] 
     git=http://github.com/symfony/symfony.git
-    version=v2.0.13
+    version=v2.0.14
 
 [twig]
     git=http://github.com/fabpot/Twig.git
-    version=v1.8.0
+    version=v1.8.1
 
 [monolog]
     git=http://github.com/Seldaek/monolog.git
@@ -35,7 +35,7 @@
 
 [metadata]
     git=http://github.com/schmittjoh/metadata.git
-    version=1.0.0
+    version=1.1.0
 
 [SensioFrameworkExtraBundle]
     git=http://github.com/sensio/SensioFrameworkExtraBundle.git
@@ -61,3 +61,7 @@
     git=http://github.com/symfony/AsseticBundle.git
     target=/bundles/Symfony/Bundle/AsseticBundle
     version=v1.0.1
+
+[JMSSerializerBundle]
+    git=git://github.com/schmittjoh/JMSSerializerBundle.git
+    target=bundles/JMS/SerializerBundle
